@@ -58,10 +58,12 @@ final class ReloadTaskViewJob extends ToolingApiJob<TaskViewContent> {
     private TaskViewContent loadContent(CancellationTokenSource tokenSource, IProgressMonitor monitor) {
         Map<File, Map<String, EclipseProject>> allModels = new LinkedHashMap<>();
         Map<File, BuildEnvironment> environments = new LinkedHashMap<>();
+        int projects = CorePlugin.internalGradleWorkspace().getGradleBuilds().size();
+        monitor.beginTask("Load tasks of all Gradle projects", projects * 2); //TODO check this: is this already called? Should it have more work? Is the work distribution correct?
         for (InternalGradleBuild gradleBuild : CorePlugin.internalGradleWorkspace().getGradleBuilds()) {
             try {
-                BuildEnvironment buildEnvironment = gradleBuild.getModelProvider().fetchModel(BuildEnvironment.class, this.modelFetchStrategy, tokenSource, monitor);
-                Map<String, EclipseProject> models = gradleBuild.getModelProvider().fetchModels(EclipseProject.class, this.modelFetchStrategy, tokenSource, monitor);
+                BuildEnvironment buildEnvironment = gradleBuild.getModelProvider().fetchModel(BuildEnvironment.class, this.modelFetchStrategy, tokenSource, monitor.slice(1));
+                Map<String, EclipseProject> models = gradleBuild.getModelProvider().fetchModels(EclipseProject.class, this.modelFetchStrategy, tokenSource, monitor.slice(1));
                 allModels.put(gradleBuild.getBuildConfig().getRootProjectDirectory(), models);
                 environments.put(gradleBuild.getBuildConfig().getRootProjectDirectory(), buildEnvironment);
             } catch (RuntimeException e) {
