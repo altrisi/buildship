@@ -6,6 +6,7 @@ repositories {
     maven {
         url gradleRemoteRepositoryUrl
     }
+    mavenCentral()
 }
 
 dependencies {
